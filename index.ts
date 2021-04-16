@@ -9,7 +9,7 @@ const typeDefs = gql`
     }
 
     type Query {
-        stores: [Store]!
+        stores: [Store!]!
     }
 `;
 
