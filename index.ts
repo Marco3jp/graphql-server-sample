@@ -1,4 +1,5 @@
 import {ApolloServer, gql} from 'apollo-server';
+import * as fs from "fs";
 
 const typeDefs = gql`
 
@@ -13,38 +14,11 @@ const typeDefs = gql`
     }
 `;
 
-const stores = [
-    {
-        id: '0',
-        name: '美味しいお寿司屋',
-        address: '海の近く',
-    },
-    {
-        id: '1',
-        name: '美味しい天ぷら屋',
-        address: '油の近く',
-    },
-    {
-        id: '2',
-        name: '美味しい居酒屋',
-        address: 'アルコールの近く'
-    },
-    {
-        id: '3',
-        name: '美味しいお好み焼き屋',
-        address: '粉の近く',
-    },
-    {
-        id: '4',
-        name: '美味しい焼肉屋',
-        address: '肉の近く',
-    }
-]
-
+const database = loadDatabase();
 
 const resolvers = {
     Query: {
-        stores: () => stores
+        stores: () => database.stores
     },
 };
 
@@ -53,3 +27,14 @@ const server = new ApolloServer({typeDefs, resolvers});
 server.listen().then(({url}) => {
     console.log(`🚀  Server ready at ${url}`);
 });
+
+
+function loadDatabase() {
+    const file = fs.readFileSync('database.json', {encoding: "utf8"});
+    return JSON.parse(file);
+}
+
+function saveDatabase(data) {
+    const fileBody = JSON.stringify(data);
+    fs.writeFileSync('database.json', fileBody);
+}
