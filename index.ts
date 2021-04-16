@@ -1,30 +1,50 @@
 import {ApolloServer, gql} from 'apollo-server';
 
 const typeDefs = gql`
-    type Book {
-        title: String
-        author: String
+
+    type Store {
+        id: ID!
+        name: String!
+        address: String
     }
 
     type Query {
-        books: [Book]
+        stores: [Store]!
     }
 `;
 
-const books = [
+const stores = [
     {
-        title: 'The Awakening',
-        author: 'Kate Chopin',
+        id: 0,
+        name: '美味しいお寿司屋',
+        address: '海の近く',
     },
     {
-        title: 'City of Glass',
-        author: 'Paul Auster',
+        id: 1,
+        name: '美味しい天ぷら屋',
+        address: '油の近く',
     },
-];
+    {
+        id: 2,
+        name: '美味しい居酒屋',
+        address: 'アルコールの近く'
+    },
+    {
+        id: 3,
+        name: '美味しいお好み焼き屋',
+        address: '粉の近く',
+    },
+    {
+        id: 4,
+        name: '美味しい焼肉屋',
+        address: '肉の近く',
+    }
+]
+
 
 const resolvers = {
     Query: {
-        books: () => books,
+        stores: () => stores
     },
 };
 
