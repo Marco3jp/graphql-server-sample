@@ -15,27 +15,27 @@ const typeDefs = gql`
 
 const stores = [
     {
-        id: 0,
+        id: '0',
         name: '美味しいお寿司屋',
         address: '海の近く',
     },
     {
-        id: 1,
+        id: '1',
         name: '美味しい天ぷら屋',
         address: '油の近く',
     },
     {
-        id: 2,
+        id: '2',
         name: '美味しい居酒屋',
         address: 'アルコールの近く'
     },
     {
-        id: 3,
+        id: '3',
         name: '美味しいお好み焼き屋',
         address: '粉の近く',
     },
     {
-        id: 4,
+        id: '4',
         name: '美味しい焼肉屋',
         address: '肉の近く',
     }
