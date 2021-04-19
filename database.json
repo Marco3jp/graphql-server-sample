@@ -25,5 +25,11 @@
       "name": "美味しい焼肉屋",
       "address": "肉の近く"
     }
+  ],
+  "users": [
+    {
+      "id": "anonymous",
+      "name": "名無しの食通"
+    }
   ]
 }
