@@ -62,7 +62,7 @@ const resolvers = {
             postingUser?.reviews ? postingUser.reviews.push(review) : postingUser.reviews = [review];
 
             saveDatabase(database);
-            return reviewInput;
+            return review;
         }
     }
 };
