@@ -55,9 +55,6 @@ const resolvers = {
             targetStore?.reviews ? targetStore.reviews.push(review) : targetStore.reviews = [review];
             postingUser?.reviews ? postingUser.reviews.push(review) : postingUser.reviews = [review];
 
-            console.log(targetStore);
-            console.log(database.stores);
-
             saveDatabase(database);
             return review;
         }
