@@ -46,23 +46,44 @@ const resolvers = {
         stores: () => database.stores,
         users: () => database.users
     },
+    Review: {
+        user(parent) {
+            return database.users.find(user => user.id === parent.userId)
+        },
+        store(parent) {
+            return database.stores.find(store => store.id === parent.storeId)
+        }
+    },
+    User: {
+        reviews(parent) {
+            return database.reviews.filter(review => review.userId === parent.id)
+        }
+    },
+    Store: {
+        reviews(parent) {
+            return database.reviews.filter(review => review.storeId === parent.id)
+        }
+    },
     Mutation: {
         postReview: (_, {review: reviewInput}) => {
+            const id = uuidv4();
+
+            database.reviews.push({
+                id,
+                ...reviewInput
+            })
+
+            saveDatabase(database);
+
             const targetStore = database.stores.find(store => store.id === reviewInput.storeId);
             const postingUser = database.users.find(user => user.id === reviewInput.userId);
 
-            const review = {
-                id: uuidv4(),
+            return {
+                id,
                 reviewText: reviewInput.reviewText,
                 store: targetStore,
                 user: postingUser
             };
-
-            targetStore?.reviews ? targetStore.reviews.push(review) : targetStore.reviews = [review];
-            postingUser?.reviews ? postingUser.reviews.push(review) : postingUser.reviews = [review];
-
-            saveDatabase(database);
-            return review;
         }
     }
 };
