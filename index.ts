@@ -55,13 +55,13 @@ const resolvers = {
         }
     },
     User: {
-        reviews(parent, args, {dataSources}) {
-            return dataSources.reviewAPI.getReviewsByUserID(parent.id)
+        async reviews(parent, args, {dataSources}) {
+            return await dataSources.reviewAPI.getReviewsByUserIDs.load(parent.id)
         }
     },
     Store: {
-        reviews(parent, args, {dataSources}) {
-            return dataSources.reviewAPI.getReviewsByStoreID(parent.id)
+        async reviews(parent, args, {dataSources}) {
+            return await dataSources.reviewAPI.getReviewsByStoreIDs.load(parent.id)
         }
     },
     Mutation: {
