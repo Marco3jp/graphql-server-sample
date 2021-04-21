@@ -43,29 +43,29 @@ const typeDefs = gql`
 
 const resolvers = {
     Query: {
-        stores: (parent, args, { dataSources }) => dataSources.database.stores,
-        users: (parent, args, { dataSources }) => dataSources.database.users
+        stores: (parent, args, {dataSources}) => dataSources.storeAPI.stores,
+        users: (parent, args, {dataSources}) => dataSources.userAPI.users
     },
     Review: {
-        user(parent, args, { dataSources }) {
+        user(parent, args, {dataSources}) {
             return dataSources.userAPI.getUserById(parent.userid)
         },
-        store(parent, args, { dataSources }) {
+        store(parent, args, {dataSources}) {
             return dataSources.storeAPI.getStoreById(parent.storeId);
         }
     },
     User: {
-        reviews(parent, args, { dataSources }) {
+        reviews(parent, args, {dataSources}) {
             return dataSources.reviewAPI.getReviewsByUserID(parent.id)
         }
     },
     Store: {
-        reviews(parent, args, { dataSources }) {
+        reviews(parent, args, {dataSources}) {
             return dataSources.reviewAPI.getReviewsByStoreID(parent.id)
         }
     },
     Mutation: {
-        postReview: (_, {review: reviewInput}, { dataSources }) => {
+        postReview: (_, {review: reviewInput}, {dataSources}) => {
             const review = {
                 id: uuidv4(),
                 ...reviewInput
@@ -78,7 +78,8 @@ const resolvers = {
     }
 };
 
-const server = new ApolloServer({typeDefs, resolvers,
+const server = new ApolloServer({
+    typeDefs, resolvers,
     dataSources: () => {
         return {
             userAPI: new UserAPI(),
