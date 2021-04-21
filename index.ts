@@ -1,6 +1,8 @@
 import {ApolloServer, gql} from 'apollo-server';
 import {v4 as uuidv4} from 'uuid';
-import * as fs from "fs";
+import {UserAPI} from "./datasource/user";
+import {StoreAPI} from "./datasource/store";
+import {ReviewAPI} from "./datasource/review";
 
 const typeDefs = gql`
     type User {
@@ -39,48 +41,52 @@ const typeDefs = gql`
     }
 `;
 
-const database = loadDatabase();
-
 const resolvers = {
     Query: {
-        stores: () => database.stores,
-        users: () => database.users
+        stores: (parent, args, { dataSources }) => dataSources.database.stores,
+        users: (parent, args, { dataSources }) => dataSources.database.users
     },
     Review: {
-        user(parent) {
-            return database.users.find(user => user.id === parent.userId)
+        user(parent, args, { dataSources }) {
+            return dataSources.userAPI.getUserById(parent.userid)
         },
-        store(parent) {
-            return database.stores.find(store => store.id === parent.storeId)
+        store(parent, args, { dataSources }) {
+            return dataSources.storeAPI.getStoreById(parent.storeId);
         }
     },
     User: {
-        reviews(parent) {
-            return database.reviews.filter(review => review.userId === parent.id)
+        reviews(parent, args, { dataSources }) {
+            return dataSources.reviewAPI.getReviewsByUserID(parent.id)
         }
     },
     Store: {
-        reviews(parent) {
-            return database.reviews.filter(review => review.storeId === parent.id)
+        reviews(parent, args, { dataSources }) {
+            return dataSources.reviewAPI.getReviewsByStoreID(parent.id)
         }
     },
     Mutation: {
-        postReview: (_, {review: reviewInput}) => {
+        postReview: (_, {review: reviewInput}, { dataSources }) => {
             const review = {
                 id: uuidv4(),
                 ...reviewInput
             }
 
-            database.reviews.push(review)
-
-            saveDatabase(database);
+            dataSources.reviewAPI.postReview(review);
 
             return review
         }
     }
 };
 
-const server = new ApolloServer({typeDefs, resolvers});
+const server = new ApolloServer({typeDefs, resolvers,
+    dataSources: () => {
+        return {
+            userAPI: new UserAPI(),
+            storeAPI: new StoreAPI(),
+            reviewAPI: new ReviewAPI()
+        }
+    },
+});
 
 server.listen().then(({url}) => {
     console.log(`🚀  Server ready at ${url}`);
