@@ -1,51 +1,83 @@
 import {ApolloServer, gql} from 'apollo-server';
+import {v4 as uuidv4} from 'uuid';
+import * as fs from "fs";
 
 const typeDefs = gql`
+    type User {
+        id: ID!
+        name: String!
+        reviews: [Review!]
+    }
+
+    input ReviewInput {
+        userId: ID!
+        storeId: ID!
+        reviewText: String!
+    }
+
+    type Review {
+        id: ID!
+        user: User!
+        store: Store!
+        reviewText: String!
+    }
 
     type Store {
         id: ID!
         name: String!
         address: String
+        reviews: [Review!]
     }
 
     type Query {
         stores: [Store!]!
+        users: [User!]!
+    }
+
+    type Mutation {
+        postReview(review: ReviewInput): Review!
     }
 `;
 
-const stores = [
-    {
-        id: '0',
-        name: '美味しいお寿司屋',
-        address: '海の近く',
-    },
-    {
-        id: '1',
-        name: '美味しい天ぷら屋',
-        address: '油の近く',
-    },
-    {
-        id: '2',
-        name: '美味しい居酒屋',
-        address: 'アルコールの近く'
-    },
-    {
-        id: '3',
-        name: '美味しいお好み焼き屋',
-        address: '粉の近く',
-    },
-    {
-        id: '4',
-        name: '美味しい焼肉屋',
-        address: '肉の近く',
-    }
-]
-
+const database = loadDatabase();
 
 const resolvers = {
     Query: {
-        stores: () => stores
+        stores: () => database.stores,
+        users: () => database.users
     },
+    Review: {
+        user(parent) {
+            return database.users.find(user => user.id === parent.userId)
+        },
+        store(parent) {
+            return database.stores.find(store => store.id === parent.storeId)
+        }
+    },
+    User: {
+        reviews(parent) {
+            return database.reviews.filter(review => review.userId === parent.id)
+        }
+    },
+    Store: {
+        reviews(parent) {
+            return database.reviews.filter(review => review.storeId === parent.id)
+        }
+    },
+    Mutation: {
+        postReview: (_, {review: reviewInput}) => {
+            const review = {
+                id: uuidv4(),
+                ...reviewInput
+            }
+
+            database.reviews.push(review)
+
+            saveDatabase(database);
+
+            return review
+        }
+    }
 };
 
 const server = new ApolloServer({typeDefs, resolvers});
@@ -53,3 +85,13 @@ const server = new ApolloServer({typeDefs, resolvers});
 server.listen().then(({url}) => {
     console.log(`🚀  Server ready at ${url}`);
 });
+
+function loadDatabase() {
+    const file = fs.readFileSync('database.json', {encoding: "utf8"});
+    return JSON.parse(file);
+}
+
+function saveDatabase(data) {
+    const fileBody = JSON.stringify(data);
+    fs.writeFileSync('database.json', fileBody);
+}
