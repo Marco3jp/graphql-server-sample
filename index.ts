@@ -48,7 +48,7 @@ const resolvers = {
     },
     Review: {
         user(parent, args, {dataSources}) {
-            return dataSources.userAPI.getUserById(parent.userid)
+            return dataSources.userAPI.getUserById(parent.userId)
         },
         store(parent, args, {dataSources}) {
             return dataSources.storeAPI.getStoreById(parent.storeId);
