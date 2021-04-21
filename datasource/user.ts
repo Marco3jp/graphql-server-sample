@@ -1,8 +1,13 @@
 import {DataSource, DataSourceConfig} from "apollo-datasource";
 import {loadDatabase, tableName} from "../utils";
 
+type user = {
+    id: string,
+    name:string
+}
+
 export class UserAPI extends DataSource {
-    context
+    context: {users: user[]}
 
     initialize(config: DataSourceConfig<any>): void {
         this.context.users = loadDatabase(tableName.users);

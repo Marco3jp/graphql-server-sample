@@ -1,11 +1,17 @@
 import {DataSource, DataSourceConfig} from "apollo-datasource";
-import {loadDatabase, saveDatabase, tableName} from "../utils";
+import {loadDatabase, tableName} from "../utils";
+
+type store = {
+    id: string,
+    name: string,
+    address: string
+}
 
 export class StoreAPI extends DataSource {
-    context
+    context: {stores: store[]}
 
     initialize(config: DataSourceConfig<any>): void {
-        this.context.store = loadDatabase(tableName.stores);
+        this.context.stores = loadDatabase(tableName.stores);
     }
 
     get stores() {
