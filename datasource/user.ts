@@ -7,9 +7,14 @@ type user = {
 }
 
 export class UserAPI extends DataSource {
-    context: {users: user[]}
+    context: any
+
+    constructor() {
+        super()
+    }
 
     initialize(config: DataSourceConfig<any>): void {
+        this.context = config.context;
         this.context.users = loadDatabase(tableName.users);
     }
 

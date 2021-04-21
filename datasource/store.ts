@@ -8,9 +8,14 @@ type store = {
 }
 
 export class StoreAPI extends DataSource {
-    context: {stores: store[]}
+    context: any
+
+    constructor() {
+        super()
+    }
 
     initialize(config: DataSourceConfig<any>): void {
+        this.context = config.context;
         this.context.stores = loadDatabase(tableName.stores);
     }
 

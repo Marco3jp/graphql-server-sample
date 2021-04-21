@@ -9,9 +9,14 @@ type review = {
 }
 
 export class ReviewAPI extends DataSource {
-    context: {reviews: review[]}
+    context: any
+
+    constructor() {
+        super()
+    }
 
     initialize(config: DataSourceConfig<any>): void {
+        this.context = config.context;
         this.context.reviews = loadDatabase(tableName.reviews);
     }
 
