@@ -66,24 +66,16 @@ const resolvers = {
     },
     Mutation: {
         postReview: (_, {review: reviewInput}) => {
-            const id = uuidv4();
-
-            database.reviews.push({
-                id,
+            const review = {
+                id: uuidv4(),
                 ...reviewInput
-            })
+            }
+
+            database.reviews.push(review)
 
             saveDatabase(database);
 
-            const targetStore = database.stores.find(store => store.id === reviewInput.storeId);
-            const postingUser = database.users.find(user => user.id === reviewInput.userId);
-
-            return {
-                id,
-                reviewText: reviewInput.reviewText,
-                store: targetStore,
-                user: postingUser
-            };
+            return review
         }
     }
 };
