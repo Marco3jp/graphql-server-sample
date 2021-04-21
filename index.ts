@@ -86,12 +86,3 @@ server.listen().then(({url}) => {
     console.log(`🚀  Server ready at ${url}`);
 });
 
-function loadDatabase() {
-    const file = fs.readFileSync('database.json', {encoding: "utf8"});
-    return JSON.parse(file);
-}
-
-function saveDatabase(data) {
-    const fileBody = JSON.stringify(data);
-    fs.writeFileSync('database.json', fileBody);
-}
