@@ -29,41 +29,21 @@ export class ReviewAPI extends DataSource {
         return this.context.reviews
     }
 
-    getReviewsByStoreIDs = new DataLoader((storeIds: string[]) => {
+    getReviewsByStoreIDs = new DataLoader((args: {storeId: string, isPublished: boolean}[]) =>{
         return new Promise(resolve => {
             const result = [];
-            storeIds.forEach(storeId => {
-                result.push(this.context.reviews.filter(review => review.storeId === storeId));
+            args.forEach(arg => {
+                result.push(this.context.reviews.filter(review => review.storeId === arg.storeId && (!arg.isPublished || review.isPublished) ));
             })
             resolve(result);
         })
     })
 
-    getReviewsByStoreIDsFilteringPublishedOnly = new DataLoader((storeIds: string[]) => {
+    getReviewsByUserIDs = new DataLoader((args: {userId: string, isPublished: boolean}[]) =>{
         return new Promise(resolve => {
             const result = [];
-            storeIds.forEach(storeId => {
-                result.push(this.context.reviews.filter(review => review.storeId === storeId && review.isPublished));
-            })
-            resolve(result);
-        })
-    })
-
-    getReviewsByUserIDs = new DataLoader((userIds: string[]) =>{
-        return new Promise(resolve => {
-            const result = [];
-            userIds.forEach(userId => {
-                result.push(this.context.reviews.filter(review => review.userId === userId));
-            })
-            resolve(result);
-        })
-    });
-
-    getReviewsByUserIDsFilteringPublishedOnly = new DataLoader((userIds: string[]) =>{
-        return new Promise(resolve => {
-            const result = [];
-            userIds.forEach(userId => {
-                result.push(this.context.reviews.filter(review => review.userId === userId && review.isPublished));
+            args.forEach(arg => {
+                result.push(this.context.reviews.filter(review => review.userId === arg.userId && (!arg.isPublished || review.isPublished) ));
             })
             resolve(result);
         })

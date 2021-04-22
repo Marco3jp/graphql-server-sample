@@ -65,20 +65,18 @@ const resolvers = {
     },
     User: {
         async reviews(parent, args, {dataSources}) {
-            if (args.isOnlyPublished) {
-                return await dataSources.reviewAPI.getReviewsByUserIDsFilteringPublishedOnly.load(parent.id)
-            } else {
-                return await dataSources.reviewAPI.getReviewsByUserIDs.load(parent.id)
-            }
+            return await dataSources.reviewAPI.getReviewsByUserIDs.load({
+                userId: parent.id,
+                isPublished: args.isOnlyPublished
+            })
         }
     },
     Store: {
         async reviews(parent, args, {dataSources}) {
-            if (args.isOnlyPublished) {
-                return dataSources.reviewAPI.getReviewsByStoreIDsFilteringPublishedOnly.load(parent.id)
-            } else {
-                return await dataSources.reviewAPI.getReviewsByStoreIDs.load(parent.id)
-            }
+            return await dataSources.reviewAPI.getReviewsByStoreIDs.load({
+                storeId: parent.id,
+                isPublished: args.isOnlyPublished
+            })
         }
     },
     Mutation: {
