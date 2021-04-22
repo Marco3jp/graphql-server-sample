@@ -30,7 +30,6 @@ export class ReviewAPI extends DataSource {
     }
 
     getReviewsByStoreIDs = new DataLoader((storeIds: string[]) => {
-        console.log("call getReviewsByStoreIDs");
         return new Promise(resolve => {
             const result = [];
             storeIds.forEach(storeId => {
@@ -41,7 +40,6 @@ export class ReviewAPI extends DataSource {
     })
 
     getReviewsByStoreIDsFilteringPublishedOnly = new DataLoader((storeIds: string[]) => {
-        console.log("call getReviewsByStoreIDs");
         return new Promise(resolve => {
             const result = [];
             storeIds.forEach(storeId => {
@@ -52,7 +50,6 @@ export class ReviewAPI extends DataSource {
     })
 
     getReviewsByUserIDs = new DataLoader((userIds: string[]) =>{
-        console.log("call getReviewsByUserIDs");
         return new Promise(resolve => {
             const result = [];
             userIds.forEach(userId => {
@@ -63,7 +60,6 @@ export class ReviewAPI extends DataSource {
     });
 
     getReviewsByUserIDsFilteringPublishedOnly = new DataLoader((userIds: string[]) =>{
-        console.log("call getReviewsByUserIDs");
         return new Promise(resolve => {
             const result = [];
             userIds.forEach(userId => {
