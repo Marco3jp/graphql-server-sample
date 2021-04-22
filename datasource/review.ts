@@ -7,6 +7,10 @@ type review = {
     userId: string
     storeId: string
     reviewText: string
+    isPublished: boolean
+    createdAt: string
+    publishedAt: string | null
+    deletedAt: string | null
 }
 
 export class ReviewAPI extends DataSource {
