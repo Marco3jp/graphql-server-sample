@@ -3,13 +3,12 @@ import {v4 as uuidv4} from 'uuid';
 import {UserAPI} from "./datasource/user";
 import {StoreAPI} from "./datasource/store";
 import {ReviewAPI} from "./datasource/review";
-import {GraphQLField} from "graphql";
 
 const typeDefs = gql`
     type User {
         id: ID!
         name: String!
-        reviews: [Review!] @publishedOnly
+        reviews(isOnlyPublished: Boolean = false): [Review!]
         createdAt: String!
         deletedAt: String
     }
@@ -36,7 +35,7 @@ const typeDefs = gql`
         id: ID!
         name: String!
         address: String
-        reviews: [Review!] @publishedOnly
+        reviews(isOnlyPublished: Boolean = false): [Review!]
         createdAt: String!
         deletedAt: String
     }
@@ -49,17 +48,7 @@ const typeDefs = gql`
     type Mutation {
         postReview(review: ReviewInput): Review!
     }
-
-    directive @publishedOnly on FIELD_DEFINITION
 `;
-
-class PublishedOnlyDirective extends SchemaDirectiveVisitor {
-    visitFieldDefinition(field: GraphQLField<any, any>) {
-        field.resolve = function (){
-            // TODO: Reviewがまだないのでどうにかする
-        }
-    }
-}
 
 const resolvers = {
     Query: {
@@ -76,12 +65,20 @@ const resolvers = {
     },
     User: {
         async reviews(parent, args, {dataSources}) {
-            return await dataSources.reviewAPI.getReviewsByUserIDs.load(parent.id)
+            if (args.isOnlyPublished) {
+                return await dataSources.reviewAPI.getReviewsByUserIDsFilteringPublishedOnly.load(parent.id)
+            } else {
+                return await dataSources.reviewAPI.getReviewsByUserIDs.load(parent.id)
+            }
         }
     },
     Store: {
         async reviews(parent, args, {dataSources}) {
-            return await dataSources.reviewAPI.getReviewsByStoreIDs.load(parent.id)
+            if (args.isOnlyPublished) {
+                return dataSources.reviewAPI.getReviewsByStoreIDsFilteringPublishedOnly.load(parent.id)
+            } else {
+                return await dataSources.reviewAPI.getReviewsByStoreIDs.load(parent.id)
+            }
         }
     },
     Mutation: {
@@ -110,9 +107,6 @@ const server = new ApolloServer({
             reviewAPI: new ReviewAPI()
         }
     },
-    schemaDirectives: {
-        publishedOnly: PublishedOnlyDirective
-    }
 });
 
 server.listen().then(({url}) => {
