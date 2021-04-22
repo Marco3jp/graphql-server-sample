@@ -1,4 +1,4 @@
-import {ApolloServer, gql} from 'apollo-server';
+import {ApolloServer, gql, SchemaDirectiveVisitor} from 'apollo-server';
 import {v4 as uuidv4} from 'uuid';
 import {UserAPI} from "./datasource/user";
 import {StoreAPI} from "./datasource/store";
@@ -9,19 +9,26 @@ const typeDefs = gql`
         id: ID!
         name: String!
         reviews: [Review!]
+        createdAt: String!
+        deletedAt: String
     }
 
     input ReviewInput {
         userId: ID!
         storeId: ID!
         reviewText: String!
+        publish: Boolean! = true
     }
 
-    type Review {
+    type Review @publishedOnly {
         id: ID!
         user: User!
         store: Store!
         reviewText: String!
+        isPublished: Boolean!
+        createdAt: String!
+        publishAt: String
+        deletedAt: String
     }
 
     type Store {
@@ -29,6 +36,8 @@ const typeDefs = gql`
         name: String!
         address: String
         reviews: [Review!]
+        createdAt: String!
+        deletedAt: String
     }
 
     type Query {
@@ -39,7 +48,21 @@ const typeDefs = gql`
     type Mutation {
         postReview(review: ReviewInput): Review!
     }
+
+    directive @publishedOnly on OBJECT
 `;
+
+class PublishedOnlyDirective extends SchemaDirectiveVisitor {
+    visitObject(type) {
+        console.log(type);
+        const fields = type.getFields();
+        if (fields.isPublished) {
+            return fields
+        }else {
+            return
+        }
+    }
+}
 
 const resolvers = {
     Query: {
@@ -68,6 +91,9 @@ const resolvers = {
         postReview: (_, {review: reviewInput}, {dataSources}) => {
             const review = {
                 id: uuidv4(),
+                createdAt: Math.round(Date.now() / 1000),
+                publishedAt: reviewInput.isPublish ? Math.round(Date.now() / 1000) : null,
+                deletedAt: null,
                 ...reviewInput
             }
 
@@ -87,6 +113,9 @@ const server = new ApolloServer({
             reviewAPI: new ReviewAPI()
         }
     },
+    schemaDirectives: {
+        publishedOnly: PublishedOnlyDirective
+    }
 });
 
 server.listen().then(({url}) => {
