@@ -3,12 +3,13 @@ import {v4 as uuidv4} from 'uuid';
 import {UserAPI} from "./datasource/user";
 import {StoreAPI} from "./datasource/store";
 import {ReviewAPI} from "./datasource/review";
+import {GraphQLField} from "graphql";
 
 const typeDefs = gql`
     type User {
         id: ID!
         name: String!
-        reviews: [Review!]
+        reviews: [Review!] @publishedOnly
         createdAt: String!
         deletedAt: String
     }
@@ -17,10 +18,10 @@ const typeDefs = gql`
         userId: ID!
         storeId: ID!
         reviewText: String!
-        publish: Boolean! = true
+        isPublished: Boolean! = true
     }
 
-    type Review @publishedOnly {
+    type Review {
         id: ID!
         user: User!
         store: Store!
@@ -35,7 +36,7 @@ const typeDefs = gql`
         id: ID!
         name: String!
         address: String
-        reviews: [Review!]
+        reviews: [Review!] @publishedOnly
         createdAt: String!
         deletedAt: String
     }
@@ -49,17 +50,13 @@ const typeDefs = gql`
         postReview(review: ReviewInput): Review!
     }
 
-    directive @publishedOnly on OBJECT
+    directive @publishedOnly on FIELD_DEFINITION
 `;
 
 class PublishedOnlyDirective extends SchemaDirectiveVisitor {
-    visitObject(type) {
-        console.log(type);
-        const fields = type.getFields();
-        if (fields.isPublished) {
-            return fields
-        }else {
-            return
+    visitFieldDefinition(field: GraphQLField<any, any>) {
+        field.resolve = function (){
+            // TODO: Reviewがまだないのでどうにかする
         }
     }
 }
