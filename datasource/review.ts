@@ -40,12 +40,34 @@ export class ReviewAPI extends DataSource {
         })
     })
 
+    getReviewsByStoreIDsFilteringPublishedOnly = new DataLoader((storeIds: string[]) => {
+        console.log("call getReviewsByStoreIDs");
+        return new Promise(resolve => {
+            const result = [];
+            storeIds.forEach(storeId => {
+                result.push(this.context.reviews.filter(review => review.storeId === storeId && review.isPublished));
+            })
+            resolve(result);
+        })
+    })
+
     getReviewsByUserIDs = new DataLoader((userIds: string[]) =>{
         console.log("call getReviewsByUserIDs");
         return new Promise(resolve => {
             const result = [];
             userIds.forEach(userId => {
                 result.push(this.context.reviews.filter(review => review.userId === userId));
+            })
+            resolve(result);
+        })
+    });
+
+    getReviewsByUserIDsFilteringPublishedOnly = new DataLoader((userIds: string[]) =>{
+        console.log("call getReviewsByUserIDs");
+        return new Promise(resolve => {
+            const result = [];
+            userIds.forEach(userId => {
+                result.push(this.context.reviews.filter(review => review.userId === userId && review.isPublished));
             })
             resolve(result);
         })
