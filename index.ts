@@ -92,7 +92,7 @@ const resolvers = {
             const review = {
                 id: uuidv4(),
                 createdAt: Math.round(Date.now() / 1000),
-                publishedAt: reviewInput.isPublish ? Math.round(Date.now() / 1000) : null,
+                publishedAt: reviewInput.isPublished ? Math.round(Date.now() / 1000) : null,
                 deletedAt: null,
                 ...reviewInput
             }
