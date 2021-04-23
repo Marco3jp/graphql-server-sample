@@ -1,4 +1,4 @@
-import {ApolloServer, gql, SchemaDirectiveVisitor} from 'apollo-server';
+import {ApolloServer, gql} from 'apollo-server';
 import {v4 as uuidv4} from 'uuid';
 import {UserAPI} from "./datasource/user";
 import {StoreAPI} from "./datasource/store";
