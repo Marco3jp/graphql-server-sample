@@ -27,7 +27,7 @@ const typeDefs = gql`
         reviewText: String!
         isPublished: Boolean!
         createdAt: String!
-        publishAt: String
+        publishedAt: String
         deletedAt: String
     }
 
