@@ -7,7 +7,7 @@ type review = {
     userId: string
     storeId: string
     reviewText: string
-    isPublished: boolean
+    isPublished?: boolean
     createdAt: string
     publishedAt: string | null
     deletedAt: string | null
@@ -29,21 +29,37 @@ export class ReviewAPI extends DataSource {
         return this.context.reviews
     }
 
-    getReviewsByStoreIDs = new DataLoader((args: {storeId: string, isPublished: boolean}[]) =>{
+    getReviewsByStoreIDs = new DataLoader((args: { storeId: string, isPublished: boolean }[]) => {
         return new Promise(resolve => {
             const result = [];
             args.forEach(arg => {
-                result.push(this.context.reviews.filter(review => review.storeId === arg.storeId && (!arg.isPublished || review.isPublished) ));
+                result.push(
+                    this.context.reviews
+                        .filter(review => review.storeId === arg.storeId && (!arg.isPublished || review.publishedAt))
+                        .map(filteredReview => {
+                            return {
+                                isPublished: filteredReview.publishedAt !== null,
+                                ...filteredReview
+                            }
+                        }));
             })
             resolve(result);
         })
     })
 
-    getReviewsByUserIDs = new DataLoader((args: {userId: string, isPublished: boolean}[]) =>{
+    getReviewsByUserIDs = new DataLoader((args: { userId: string, isPublished: boolean }[]) => {
         return new Promise(resolve => {
             const result = [];
             args.forEach(arg => {
-                result.push(this.context.reviews.filter(review => review.userId === arg.userId && (!arg.isPublished || review.isPublished) ));
+                result.push(
+                    this.context.reviews
+                        .filter(review => review.userId === arg.userId && (!arg.isPublished || review.publishedAt))
+                        .map(filteredReview => {
+                            return {
+                                isPublished: filteredReview.publishedAt !== null,
+                                ...filteredReview
+                            }
+                        }));
             })
             resolve(result);
         })

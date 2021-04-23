@@ -89,6 +89,8 @@ const resolvers = {
                 ...reviewInput
             }
 
+            delete review.isPublished
+
             dataSources.reviewAPI.postReview(review);
 
             return review
