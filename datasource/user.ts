@@ -2,8 +2,10 @@ import {DataSource, DataSourceConfig} from "apollo-datasource";
 import {loadDatabase, tableName} from "../utils";
 
 type user = {
-    id: string,
+    id: string
     name:string
+    createdAt: string
+    deletedAt: string | null
 }
 
 export class UserAPI extends DataSource {

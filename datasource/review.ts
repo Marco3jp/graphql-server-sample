@@ -7,6 +7,10 @@ type review = {
     userId: string
     storeId: string
     reviewText: string
+    isPublished?: boolean
+    createdAt: string
+    publishedAt: string | null
+    deletedAt: string | null
 }
 
 export class ReviewAPI extends DataSource {
@@ -25,23 +29,37 @@ export class ReviewAPI extends DataSource {
         return this.context.reviews
     }
 
-    getReviewsByStoreIDs = new DataLoader((storeIds: string[]) => {
-        console.log("call getReviewsByStoreIDs");
+    getReviewsByStoreIDs = new DataLoader((args: { storeId: string, isPublished: boolean }[]) => {
         return new Promise(resolve => {
             const result = [];
-            storeIds.forEach(storeId => {
-                result.push(this.context.reviews.filter(review => review.storeId === storeId));
+            args.forEach(arg => {
+                result.push(
+                    this.context.reviews
+                        .filter(review => review.storeId === arg.storeId && (!arg.isPublished || review.publishedAt))
+                        .map(filteredReview => {
+                            return {
+                                isPublished: filteredReview.publishedAt !== null,
+                                ...filteredReview
+                            }
+                        }));
             })
             resolve(result);
         })
     })
 
-    getReviewsByUserIDs = new DataLoader((userIds: string[]) =>{
-        console.log("call getReviewsByUserIDs");
+    getReviewsByUserIDs = new DataLoader((args: { userId: string, isPublished: boolean }[]) => {
         return new Promise(resolve => {
             const result = [];
-            userIds.forEach(userId => {
-                result.push(this.context.reviews.filter(review => review.userId === userId));
+            args.forEach(arg => {
+                result.push(
+                    this.context.reviews
+                        .filter(review => review.userId === arg.userId && (!arg.isPublished || review.publishedAt))
+                        .map(filteredReview => {
+                            return {
+                                isPublished: filteredReview.publishedAt !== null,
+                                ...filteredReview
+                            }
+                        }));
             })
             resolve(result);
         })

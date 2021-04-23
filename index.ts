@@ -8,13 +8,16 @@ const typeDefs = gql`
     type User {
         id: ID!
         name: String!
-        reviews: [Review!]
+        reviews(isOnlyPublished: Boolean = false): [Review!]
+        createdAt: String!
+        deletedAt: String
     }
 
     input ReviewInput {
         userId: ID!
         storeId: ID!
         reviewText: String!
+        isPublished: Boolean! = true
     }
 
     type Review {
@@ -22,13 +25,19 @@ const typeDefs = gql`
         user: User!
         store: Store!
         reviewText: String!
+        isPublished: Boolean!
+        createdAt: String!
+        publishedAt: String
+        deletedAt: String
     }
 
     type Store {
         id: ID!
         name: String!
         address: String
-        reviews: [Review!]
+        reviews(isOnlyPublished: Boolean = false): [Review!]
+        createdAt: String!
+        deletedAt: String
     }
 
     type Query {
@@ -56,20 +65,31 @@ const resolvers = {
     },
     User: {
         async reviews(parent, args, {dataSources}) {
-            return await dataSources.reviewAPI.getReviewsByUserIDs.load(parent.id)
+            return await dataSources.reviewAPI.getReviewsByUserIDs.load({
+                userId: parent.id,
+                isPublished: args.isOnlyPublished
+            })
         }
     },
     Store: {
         async reviews(parent, args, {dataSources}) {
-            return await dataSources.reviewAPI.getReviewsByStoreIDs.load(parent.id)
+            return await dataSources.reviewAPI.getReviewsByStoreIDs.load({
+                storeId: parent.id,
+                isPublished: args.isOnlyPublished
+            })
         }
     },
     Mutation: {
         postReview: (_, {review: reviewInput}, {dataSources}) => {
             const review = {
                 id: uuidv4(),
+                createdAt: Math.round(Date.now() / 1000),
+                publishedAt: reviewInput.isPublished ? Math.round(Date.now() / 1000) : null,
+                deletedAt: null,
                 ...reviewInput
             }
+
+            delete review.isPublished
 
             dataSources.reviewAPI.postReview(review);
 
