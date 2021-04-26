@@ -128,8 +128,10 @@ const resolvers = {
 
             return review
         },
-        deleteReview(...args) {
-            console.log("delete", args);
+        deleteReview(_, args, {dataSources}) {
+            console.log("delete", args, dataSources);
+            // do authorization
+            dataSources.reviewAPI.deleteReview(args.reviewDeletingRequirement.reviewId)
         }
     }
 };
