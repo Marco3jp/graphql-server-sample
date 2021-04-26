@@ -18,6 +18,7 @@ export class UserAPI extends DataSource {
     initialize(config: DataSourceConfig<any>): void {
         this.context = config.context;
         this.context.users = loadDatabase(tableName.users);
+        this.context.userPasswordHashes = loadDatabase(tableName.userPasswordHashes);
     }
 
     get users() {
@@ -26,5 +27,9 @@ export class UserAPI extends DataSource {
 
     getUserById(userId: string) {
         return this.context.users.find(user => user.id === userId);
+    }
+
+    getUserPasswordHashByUserId(userId: string) {
+        return this.context.userPasswordHashes.find(userPasswordHash => userPasswordHash.userId === userId);
     }
 }
