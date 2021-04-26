@@ -50,13 +50,7 @@ const typeDefs = gql`
 
     type Mutation {
         postReview(review: ReviewInput): Review!
-        deleteReview(reviewDeletingRequirement: DeleteReviewArgments): DeleteReviewPayload @auth
-    }
-
-    input DeleteReviewArgments {
-        reviewId: ID!
-        userId: ID!
-        rawPassword: String!
+        deleteReview(reviewId: ID): DeleteReviewPayload @auth
     }
 
     type DeleteReviewPayload {
@@ -68,17 +62,22 @@ const typeDefs = gql`
 
 class AuthDirective extends SchemaDirectiveVisitor {
     visitFieldDefinition(field: GraphQLField<any, any>, details: { objectType: GraphQLObjectType | GraphQLInterfaceType }): GraphQLField<any, any> | void | null {
+        const {resolve = defaultFieldResolver} = field;
+
         field.resolve = async function (source, args, context, info) {
-            const {resolve = defaultFieldResolver} = field;
-            const storedUserPasswordHash = context.dataSources.userAPI.getUserPasswordHashByUserId(args.reviewDeletingRequirement.userId);
-            if (args.reviewDeletingRequirement.rawPassword && storedUserPasswordHash) {
-                bcrypt.compare(args.reviewDeletingRequirement.rawPassword, storedUserPasswordHash).then((result) => {
-                    if (result) {
-                        // success authentication, but did not authorization
-                    }
+            const storedUserPasswordHash = context.dataSources.userAPI.getUserPasswordHashByUserId(context.userId);
+            if (context.rawPassword && storedUserPasswordHash) {
+                bcrypt.compare(context.rawPassword, storedUserPasswordHash).then((result) => {
+                    args.isSuccessAuthentication = !!result;
                 })
+            } else {
+                // reject authentication
+                return {
+                    msg: 'Rejected authentication'
+                }
             }
-            // reject authentication
+
+            return resolve.apply(this, [source, args, context, info]);
         }
     }
 }
@@ -128,10 +127,18 @@ const resolvers = {
 
             return review
         },
-        deleteReview(_, args, {dataSources}) {
-            console.log("delete", args, dataSources);
-            // do authorization
-            dataSources.reviewAPI.deleteReview(args.reviewDeletingRequirement.reviewId)
+        async deleteReview(parent, args, context) {
+            const targetReview = await context.dataSources.reviewAPI.getReviewById.load(args.reviewId);
+            // do authorization, only permit myself
+            if (targetReview && context.userId === targetReview.userId) {
+                return {
+                    msg: context.dataSources.reviewAPI.deleteReview(args.reviewId)
+                }
+            }else {
+                return {
+                    msg: "There is not target review"
+                }
+            }
         }
     }
 };
@@ -147,6 +154,12 @@ const server = new ApolloServer({
     },
     schemaDirectives: {
         auth: AuthDirective
+    },
+    context: ({req}) => {
+        return {
+            rawPassword: req.headers.rawpassword,
+            userId: req.headers.userid,
+        }
     }
 });
 
