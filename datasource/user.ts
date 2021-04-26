@@ -30,6 +30,6 @@ export class UserAPI extends DataSource {
     }
 
     getUserPasswordHashByUserId(userId: string) {
-        return this.context.userPasswordHashes.find(userPasswordHash => userPasswordHash.userId === userId);
+        return this.context.userPasswordHashes.find(userPasswordHash => userPasswordHash.userId === userId)?.hashed_password;
     }
 }
