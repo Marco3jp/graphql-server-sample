@@ -29,6 +29,18 @@ export class ReviewAPI extends DataSource {
         return this.context.reviews
     }
 
+    getReviewById = new DataLoader((reviewIds: string[]) => {
+        return new Promise(resolve => {
+            const result = [];
+            reviewIds.forEach(reviewId => {
+                result.push(this.context.reviews.find(review => {
+                    return review.id === reviewId && review.deletedAt === null
+                }));
+            })
+            resolve(result);
+        })
+    })
+
     getReviewsByStoreIDs = new DataLoader((args: { storeId: string, isPublished: boolean }[]) => {
         return new Promise(resolve => {
             const result = [];
@@ -72,11 +84,16 @@ export class ReviewAPI extends DataSource {
 
     deleteReview(reviewId) {
         const target = this.context.reviews.find(review => review.id === reviewId);
+        let msg = '';
         if (target) {
             target.deletedAt = Math.round(Date.now() / 1000);
-            return 'Success review deleting'
-        }else {
-            return 'There is not target review'
+            msg = 'Success review deleting'
+        } else {
+            msg = 'There is not target review'
         }
+
+        saveDatabase(tableName.reviews, this.context.reviews);
+
+        return msg;
     }
 }
