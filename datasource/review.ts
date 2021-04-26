@@ -47,7 +47,11 @@ export class ReviewAPI extends DataSource {
             args.forEach(arg => {
                 result.push(
                     this.context.reviews
-                        .filter(review => review.storeId === arg.storeId && (!arg.isPublished || review.publishedAt))
+                        .filter(review => {
+                            return review.storeId === arg.storeId
+                                && (!arg.isPublished || review.publishedAt)
+                                && review.deletedAt === null
+                        })
                         .map(filteredReview => {
                             return {
                                 isPublished: filteredReview.publishedAt !== null,
@@ -65,7 +69,11 @@ export class ReviewAPI extends DataSource {
             args.forEach(arg => {
                 result.push(
                     this.context.reviews
-                        .filter(review => review.userId === arg.userId && (!arg.isPublished || review.publishedAt))
+                        .filter(review => {
+                            return review.userId === arg.userId
+                                && (!arg.isPublished || review.publishedAt)
+                                && review.deletedAt === null
+                        })
                         .map(filteredReview => {
                             return {
                                 isPublished: filteredReview.publishedAt !== null,
