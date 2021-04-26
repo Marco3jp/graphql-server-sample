@@ -47,7 +47,20 @@ const typeDefs = gql`
 
     type Mutation {
         postReview(review: ReviewInput): Review!
+        deleteReview(reviewDeletingRequirement: DeleteReviewArgments): DeleteReviewPayload @auth
     }
+
+    input DeleteReviewArgments {
+        reviewId: ID!
+        userId: ID!
+        rawPassword: String!
+    }
+
+    type DeleteReviewPayload {
+        msg: String
+    }
+
+    directive @auth on FIELD_DEFINITION
 `;
 
 const resolvers = {
