@@ -68,16 +68,15 @@ class AuthDirective extends SchemaDirectiveVisitor {
             const storedUserPasswordHash = context.dataSources.userAPI.getUserPasswordHashByUserId(context.userId);
             if (context.rawPassword && storedUserPasswordHash) {
                 bcrypt.compare(context.rawPassword, storedUserPasswordHash).then((result) => {
-                    args.isSuccessAuthentication = !!result;
+                    if (result) {
+                        return resolve.apply(this, [source, args, context, info]);
+                    }
                 })
-            } else {
-                // reject authentication
-                return {
-                    msg: 'Rejected authentication'
-                }
             }
-
-            return resolve.apply(this, [source, args, context, info]);
+            // reject authentication
+            return {
+                msg: 'Rejected authentication'
+            }
         }
     }
 }
