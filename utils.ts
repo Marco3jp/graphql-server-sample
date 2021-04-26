@@ -3,7 +3,8 @@ import * as fs from "fs";
 export enum tableName {
     reviews = "reviews",
     stores = "stores",
-    users = "users"
+    users = "users",
+    userPasswordHashes = "userPasswordHashes",
 }
 
 export function loadDatabase(tableName: tableName) {
