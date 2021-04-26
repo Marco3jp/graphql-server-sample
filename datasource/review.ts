@@ -69,4 +69,14 @@ export class ReviewAPI extends DataSource {
         this.context.reviews.push(review);
         saveDatabase(tableName.reviews, this.context.reviews);
     }
+
+    deleteReview(reviewId) {
+        const target = this.context.reviews.find(review => review.id === reviewId);
+        if (target) {
+            target.deletedAt = Math.round(Date.now() / 1000);
+            return 'Success review deleting'
+        }else {
+            return 'There is not target review'
+        }
+    }
 }
