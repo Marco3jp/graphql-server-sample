@@ -1,8 +1,11 @@
-import {ApolloServer, gql} from 'apollo-server';
+import {ApolloServer, gql, SchemaDirectiveVisitor} from 'apollo-server';
 import {v4 as uuidv4} from 'uuid';
+
+const bcrypt = require('bcrypt');
 import {UserAPI} from "./datasource/user";
 import {StoreAPI} from "./datasource/store";
 import {ReviewAPI} from "./datasource/review";
+import {defaultFieldResolver, GraphQLField, GraphQLInterfaceType, GraphQLObjectType} from "graphql";
 
 const typeDefs = gql`
     type User {
@@ -47,8 +50,36 @@ const typeDefs = gql`
 
     type Mutation {
         postReview(review: ReviewInput): Review!
+        deleteReview(reviewId: ID): DeleteReviewPayload @auth
     }
+
+    type DeleteReviewPayload {
+        msg: String
+    }
+
+    directive @auth on FIELD_DEFINITION
 `;
+
+class AuthDirective extends SchemaDirectiveVisitor {
+    visitFieldDefinition(field: GraphQLField<any, any>, details: { objectType: GraphQLObjectType | GraphQLInterfaceType }): GraphQLField<any, any> | void | null {
+        const {resolve = defaultFieldResolver} = field;
+
+        field.resolve = async function (source, args, context, info) {
+            const storedUserPasswordHash = context.dataSources.userAPI.getUserPasswordHashByUserId(context.userId);
+            if (context.rawPassword && storedUserPasswordHash) {
+                bcrypt.compare(context.rawPassword, storedUserPasswordHash).then((result) => {
+                    if (result) {
+                        return resolve.apply(this, [source, args, context, info]);
+                    }
+                })
+            }
+            // reject authentication
+            return {
+                msg: 'Rejected authentication'
+            }
+        }
+    }
+}
 
 const resolvers = {
     Query: {
@@ -94,6 +125,19 @@ const resolvers = {
             dataSources.reviewAPI.postReview(review);
 
             return review
+        },
+        async deleteReview(parent, args, context) {
+            const targetReview = await context.dataSources.reviewAPI.getReviewById.load(args.reviewId);
+            // do authorization, only permit myself
+            if (targetReview && context.userId === targetReview.userId) {
+                return {
+                    msg: context.dataSources.reviewAPI.deleteReview(args.reviewId)
+                }
+            }else {
+                return {
+                    msg: "There is not target review"
+                }
+            }
         }
     }
 };
@@ -107,6 +151,15 @@ const server = new ApolloServer({
             reviewAPI: new ReviewAPI()
         }
     },
+    schemaDirectives: {
+        auth: AuthDirective
+    },
+    context: ({req}) => {
+        return {
+            rawPassword: req.headers.rawpassword,
+            userId: req.headers.userid,
+        }
+    }
 });
 
 server.listen().then(({url}) => {
